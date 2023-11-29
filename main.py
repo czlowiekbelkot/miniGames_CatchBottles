@@ -123,10 +123,8 @@ def game_loop():
                     player_speed = -10
                 elif event.key == pygame.K_RIGHT:
                     player_speed = 10
-
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    player_speed = 0
+                else:
+                    player_speed = 0 #Doesn't work
 
         pygame.display.flip()
         clock.tick(60)
