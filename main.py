@@ -125,7 +125,7 @@ def game_loop():
         elif keys_pressed[pygame.K_RIGHT]:
             player_speed = 10
         else:
-            if pygame.K_RIGHT and pygame.K_LEFT not in keys_pressed:
+            if pygame.K_RIGHT not in keys_pressed and pygame.K_LEFT not in keys_pressed:
                 player_speed = 0
 
         pygame.display.flip()
