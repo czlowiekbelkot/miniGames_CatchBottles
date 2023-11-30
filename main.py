@@ -118,13 +118,14 @@ def game_loop():
             if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 sys.exit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    player_speed = -10
-                elif event.key == pygame.K_RIGHT:
-                    player_speed = 10
-                else:
-                    player_speed = 0 #Doesn't work
+        keys_pressed = pygame.key.get_pressed()
+
+        if keys_pressed[pygame.K_LEFT]:
+            player_speed = -10
+        elif keys_pressed[pygame.K_RIGHT]:
+            player_speed = 10
+        else:
+            player_speed = 0
 
         pygame.display.flip()
         clock.tick(60)
