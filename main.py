@@ -17,6 +17,7 @@ player_width, player_height = 30, 55
 player_x = (width - player_width) / 2
 player_y = height - player_height
 player_speed = 0
+last_key = None
 
 object_width, object_height = 15, 30
 
@@ -55,7 +56,7 @@ def draw_text(text, font, color, x, y):
 
 
 def game_loop():
-    global player_x, player_speed
+    global player_x, player_speed, last_key
     clock = pygame.time.Clock()
     bottles = []
     sopels = []
@@ -117,16 +118,23 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    last_key = "left"
+                if event.key == pygame.K_RIGHT:
+                    last_key = "right"
 
         keys_pressed = pygame.key.get_pressed()
 
         if keys_pressed[pygame.K_LEFT]:
-            player_speed = -10
+            if last_key == "right" and keys_pressed[pygame.K_RIGHT]:
+                player_speed = 10
+            else:
+                player_speed = -10
         elif keys_pressed[pygame.K_RIGHT]:
             player_speed = 10
         else:
-            if pygame.K_RIGHT not in keys_pressed and pygame.K_LEFT not in keys_pressed:
-                player_speed = 0
+            player_speed = 0
 
         pygame.display.flip()
         clock.tick(60)
