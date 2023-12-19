@@ -4,7 +4,7 @@ import random
 
 pygame.init()
 
-width = 600 
+width = 600
 height = 600
 window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Catch Bottle")
@@ -17,22 +17,25 @@ player_width, player_height = 30, 55
 player_x = (width - player_width) / 2
 player_y = height - player_height
 player_speed = 0
+player_image = pygame.image.load('player.jpg')
 
-object_width, object_height = 15, 30
+object_width, object_height = 15, 55
+bottle_image = pygame.image.load('bottle.jpg')
+sopel_image = pygame.image.load('sopel.jpg')
 
 
 def draw_player(x, y):
-    pygame.draw.rect(window, white, [x, y, player_width, player_height])
- 
+    window.blit(player_image, (x, y))
+
 
 def draw_bottle(bottles):
     for bottle in bottles:
-        pygame.draw.rect(window, green, bottle)
-  
+        window.blit(bottle_image, bottle)
+
 
 def draw_sopel(sopels):
     for sopel in sopels:
-        pygame.draw.rect(window, red, sopel)
+        window.blit(sopel_image, sopel)
 
 
 def collision_check(player, bottles, sopels):
@@ -59,6 +62,7 @@ def game_loop():
     clock = pygame.time.Clock()
     bottles = []
     sopels = []
+    rozbitki = []
     score = 0
     show_warning = False
     warning_threshold = 1.2
@@ -83,11 +87,15 @@ def game_loop():
 
         for bottle in bottles:
             bottle.y += 10
+            if bottle.y > height:
+                rozbitki.append(bottle)
+                bottles.remove(bottle)
 
         for sopel in sopels:
             sopel.y += 10
 
-        caught, good_object = collision_check(pygame.Rect(player_x, player_y, player_width, player_height), bottles, sopels)
+        caught, good_object = collision_check(pygame.Rect(player_x, player_y, player_width, player_height), bottles,
+                                              sopels)
 
         if caught:
             if good_object:
@@ -106,6 +114,8 @@ def game_loop():
 
         score_text = "Alkohol we krwi: {:.1f}‰".format(score)
         draw_text(score_text, font, white, 10, 10)
+        missed_text = "Rozbite buteleczki: {:2d}".format(len(rozbitki))
+        draw_text(missed_text, font, red, width - 270, 10)
 
         if show_warning and score <= warning_threshold:
             warning_text = "Rafałku! Trzeźwiejesz!"
