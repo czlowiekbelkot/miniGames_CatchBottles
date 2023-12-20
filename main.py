@@ -24,6 +24,9 @@ object_width, object_height = 15, 55
 bottle_image = pygame.image.load('bottle.jpg')
 sopel_image = pygame.image.load('sopel.jpg')
 
+esperal_width, esperal_height = 250, 120
+esperal_image = pygame.image.load('esperal.png').convert_alpha()
+
 
 def draw_player(x, y):
     window.blit(player_image, (x, y))
@@ -39,23 +42,48 @@ def draw_sopel(sopels):
         window.blit(sopel_image, sopel)
 
 
-def collision_check(player, bottles, sopels):
+def draw_esperal(esperals):
+    for esperal in esperals:
+        window.blit(esperal_image, esperal)
+
+
+def collision_check(player, bottles, sopels, esperals):
     for bottle in bottles:
         if player.colliderect(bottle):
             bottles.remove(bottle)
-            return True, True
+            return True, True, False
 
     for sopel in sopels:
         if player.colliderect(sopel):
             sopels.remove(sopel)
-            return True, False
+            return True, False, False
 
-    return False, False
+    for esperal in esperals:
+        if player.colliderect(esperal):
+            return True, True, True
+
+    return False, False, False
 
 
 def draw_text(text, font, color, x, y):
     text_surface = font.render(text, True, color)
     window.blit(text_surface, (x, y))
+
+
+def game_over_screen(font):
+    draw_text("Game Over", font, red, width // 2 - 65, height // 2 - 100)
+    draw_text("Press Enter to Play Again", font, white, width // 2 - 155, height // 2 - 50)
+
+    pygame.display.flip()
+
+    waiting_for_enter = True
+    while waiting_for_enter:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                waiting_for_enter = False
+    return True
 
 
 def game_loop():
@@ -64,6 +92,7 @@ def game_loop():
     bottles = []
     sopels = []
     rozbitki = []
+    esperals = []
     score = 0
     show_warning = False
     warning_threshold = 1.2
@@ -83,11 +112,14 @@ def game_loop():
         if random.randint(0, 100) < 1:
             bottles.append(pygame.Rect(random.randint(0, width - object_width), 0, object_width, object_height))
 
-        if random.randint(0, 100) < 2:
+        if random.randint(0, 100) < 5:
             sopels.append(pygame.Rect(random.randint(0, width - object_width), 0, object_width, object_height))
 
+        if random.random() < 0.0001:
+            esperals.append(pygame.Rect(random.randint(0, width - esperal_width), 0, esperal_width, esperal_height))
+
         for bottle in bottles:
-            bottle.y += 10
+            bottle.y += 8
             if bottle.y > height:
                 rozbitki.append(bottle)
                 bottles.remove(bottle)
@@ -95,23 +127,39 @@ def game_loop():
         for sopel in sopels:
             sopel.y += 10
 
-        caught, good_object = collision_check(pygame.Rect(player_x, player_y, player_width, player_height), bottles,
-                                              sopels)
+        for esperal in esperals:
+            esperal.y += 12
+
+        caught, good_object, game_over = collision_check(pygame.Rect(player_x, player_y, player_width, player_height), bottles,
+                                              sopels, esperals)
 
         if caught:
             if good_object:
                 score += 0.1
             else:
-                score -= 0.2
-                score = max(score, 0)
+                score -= 1
                 if score <= warning_threshold and not show_warning:
                     show_warning = True
                     warning_start_time = current_time
+
+        if score < 0 and not game_over:
+            game_over = True
+            show_warning = False
+
+        if game_over:
+            if game_over_screen(font):
+                player_x = (width - player_width) / 2
+                player_speed = 0
+                score = 0
+                bottles.clear()
+                sopels.clear()
+                rozbitki.clear()
 
         window.fill((0, 0, 0))
         draw_player(player_x, player_y)
         draw_bottle(bottles)
         draw_sopel(sopels)
+        draw_esperal(esperals)
 
         score_text = "Alkohol we krwi: {:.1f}‰".format(score)
         draw_text(score_text, font, white, 10, 10)
@@ -120,7 +168,7 @@ def game_loop():
 
         if show_warning and score <= warning_threshold:
             warning_text = "Rafałku! Trzeźwiejesz!"
-            draw_text(warning_text, font, red, width // 2 - 100, height // 2)
+            draw_text(warning_text, font, red, width // 2 - 135, height // 2)
 
             if current_time - warning_start_time >= warning_duration:
                 show_warning = False
