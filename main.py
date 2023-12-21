@@ -191,6 +191,7 @@ def game_loop():
                 esperals.clear()
                 pygame.mixer.music.play(-1)
                 game_over_sound.stop()
+                background_x = -269
 
         draw_background()
         draw_player(player_x, player_y)
