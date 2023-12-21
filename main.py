@@ -18,14 +18,23 @@ player_x = (width - player_width) / 2
 player_y = height - player_height
 player_speed = 0
 last_key = None
-player_image = pygame.image.load('player.jpg')
+player_image = pygame.image.load('img/player.png').convert_alpha()
 
 object_width, object_height = 15, 55
-bottle_image = pygame.image.load('bottle.jpg')
-sopel_image = pygame.image.load('sopel.jpg')
+bottle_image = pygame.image.load('img/bottle.png').convert_alpha()
+sopel_image = pygame.image.load('img/sopel.png').convert_alpha()
 
 esperal_width, esperal_height = 250, 120
-esperal_image = pygame.image.load('esperal.png').convert_alpha()
+esperal_image = pygame.image.load('img/esperal.png').convert_alpha()
+
+background = pygame.image.load("img/background.png")
+screen = pygame.display.set_mode((width, height))
+background_width = background.get_width()
+background_x = (width - background_width) // 2
+
+
+def draw_background():
+    window.blit(background, (background_x, 0))
 
 
 def draw_player(x, y):
@@ -87,7 +96,7 @@ def game_over_screen(font):
 
 
 def game_loop():
-    global player_x, player_speed, last_key
+    global player_x, player_speed, last_key, background_x
     clock = pygame.time.Clock()
     bottles = []
     sopels = []
@@ -105,6 +114,13 @@ def game_loop():
 
         # Update player position
         player_x += player_speed
+
+        # Update background position
+        background_x -= player_speed / 3
+        if player_x <= 0:
+            background_x = -172
+        elif player_x >= 570:
+            background_x = -365
 
         # Limit player to screen border
         player_x = max(0, min(player_x, width - player_width))
@@ -130,8 +146,8 @@ def game_loop():
         for esperal in esperals:
             esperal.y += 12
 
-        caught, good_object, game_over = collision_check(pygame.Rect(player_x, player_y, player_width, player_height), bottles,
-                                              sopels, esperals)
+        caught, good_object, game_over = collision_check(pygame.Rect(player_x, player_y, player_width, player_height),
+                                                         bottles, sopels, esperals)
 
         if caught:
             if good_object:
@@ -154,8 +170,9 @@ def game_loop():
                 bottles.clear()
                 sopels.clear()
                 rozbitki.clear()
+                esperals.clear()
 
-        window.fill((0, 0, 0))
+        draw_background()
         draw_player(player_x, player_y)
         draw_bottle(bottles)
         draw_sopel(sopels)
