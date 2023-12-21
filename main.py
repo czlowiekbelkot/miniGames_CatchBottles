@@ -3,6 +3,16 @@ import sys
 import random
 
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.music.load('sound/background_music.mp3')
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.5)
+
+bottle_collision_sound = pygame.mixer.Sound('sound/bottle.mp3')
+bottle_smash_sound = pygame.mixer.Sound('sound/smash_bottle.mp3')
+esperal_collision_sound = pygame.mixer.Sound('sound/esperal.mp3')
+sopel_collision_sound = pygame.mixer.Sound('sound/sopel.mp3')
+game_over_sound = pygame.mixer.Sound('sound/game_over.mp3')
 
 width = 600
 height = 600
@@ -60,15 +70,20 @@ def collision_check(player, bottles, sopels, esperals):
     for bottle in bottles:
         if player.colliderect(bottle):
             bottles.remove(bottle)
+            bottle_collision_sound.play()
             return True, True, False
 
     for sopel in sopels:
         if player.colliderect(sopel):
             sopels.remove(sopel)
+            sopel_collision_sound.play()
             return True, False, False
 
     for esperal in esperals:
         if player.colliderect(esperal):
+            pygame.mixer.music.stop()
+            esperal_collision_sound.play()
+            game_over_sound.play()
             return True, True, True
 
     return False, False, False
@@ -131,7 +146,7 @@ def game_loop():
         if random.randint(0, 100) < 5:
             sopels.append(pygame.Rect(random.randint(0, width - object_width), 0, object_width, object_height))
 
-        if random.random() < 0.0001:
+        if random.random() < 0.0005:
             esperals.append(pygame.Rect(random.randint(0, width - esperal_width), 0, esperal_width, esperal_height))
 
         for bottle in bottles:
@@ -139,6 +154,7 @@ def game_loop():
             if bottle.y > height:
                 rozbitki.append(bottle)
                 bottles.remove(bottle)
+                bottle_smash_sound.play()
 
         for sopel in sopels:
             sopel.y += 10
@@ -161,6 +177,8 @@ def game_loop():
         if score < 0 and not game_over:
             game_over = True
             show_warning = False
+            pygame.mixer.music.stop()
+            game_over_sound.play()
 
         if game_over:
             if game_over_screen(font):
@@ -171,6 +189,8 @@ def game_loop():
                 sopels.clear()
                 rozbitki.clear()
                 esperals.clear()
+                pygame.mixer.music.play(-1)
+                game_over_sound.stop()
 
         draw_background()
         draw_player(player_x, player_y)
